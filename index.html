@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AARAMBH 2K26 - Certificate Generator & Gmail Dispatcher</title>
+  <!-- Google Fonts for typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Great+Vibes&family=Montserrat:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Top App Navigation -->
+  <header class="app-header no-print">
+    <div class="header-brand">
+      <div class="badge-icon">📜</div>
+      <div>
+        <h1 class="header-title">AARAMBH 2K26 • Certificate Generator & Gmail Dispatcher</h1>
+        <p class="header-subtitle">Seshadripuram First Grade College • Inter-Collegiate PU Fest</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="status-pill"><span class="pulse-dot"></span> 300 DPI Official Template</span>
+      <span id="serverStatusBadge" class="server-status-pill offline" title="Status of 1-Click Automated Email Sender">
+        <span class="status-dot"></span> Auto-Sender: Standby
+      </span>
+      <button id="btnSendAllEmailsTop" class="btn btn-success" title="Send certificate emails to ALL participants">
+        ✉️ Send All Emails
+      </button>
+      <button id="btnPrintCurrentTop" class="btn btn-outline" title="Print currently previewed certificate">
+        🖨️ Print Current
+      </button>
+      <button id="btnPrintAllTop" class="btn btn-primary" title="Print all loaded certificates (Multi-Page)">
+        🖨️ Print All Certificates
+      </button>
+      <button id="btnDownloadTop" class="btn btn-secondary" title="Download certificate in Ultra HD PNG">
+        📥 Download PNG
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="app-container">
+    <!-- Left Sidebar: Controls & Inputs -->
+    <aside class="sidebar no-print">
+      <!-- Mode Tabs: Upload Excel/CSV (Default) vs Manual Typing -->
+      <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="upload">📁 Upload Excel / CSV</button>
+        <button class="tab-btn" data-tab="manual">✍️ Manual Typing</button>
+      </div>
+
+      <!-- ==================== TAB 1: UPLOAD EXCEL / CSV ==================== -->
+      <div id="tabUpload" class="tab-content active">
+        <!-- Upload Card -->
+        <div class="card upload-card">
+          <div class="card-header">
+            <span class="card-icon">📊</span>
+            <h2>Upload Participant Spreadsheet</h2>
+          </div>
+          <p class="card-desc">Upload an Excel (<strong>.xlsx</strong>, <strong>.xls</strong>) or <strong>.csv</strong> file. The system automatically detects <strong>Name / Members</strong>, <strong>Event</strong>, and <strong>Gmail / Email</strong> columns.</p>
+
+          <!-- Drag and Drop Zone -->
+          <div class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="file-input-hidden">
+            <div class="drop-zone-content">
+              <span class="drop-icon">📤</span>
+              <p class="drop-prompt"><strong>Click to browse</strong> or drag & drop file here</p>
+              <p class="drop-sub">Supports Excel (.xlsx, .xls) and CSV (.csv)</p>
+            </div>
+          </div>
+
+          <!-- Quick Sample File Loader -->
+          <div class="sample-file-bar">
+            <span>Don't have a file ready?</span>
+            <button type="button" id="btnLoadDemo" class="btn-text">⚡ Load Battle Front Fest Sample (61 Teams / 244 Certs)</button>
+          </div>
+        </div>
+
+        <!-- Column Recognition Card (Shows after file is selected) -->
+        <div id="columnMappingCard" class="card" style="display:none;">
+          <div class="card-header flex-between">
+            <div class="flex-align">
+              <span class="card-icon">🔍</span>
+              <h2>Column Recognition & Settings</h2>
+            </div>
+            <span class="auto-badge" id="recognitionBadge">✓ Auto-Detected</span>
+          </div>
+
+          <div class="mapping-grid-3">
+            <div class="form-group">
+              <label for="selectNameCol">
+                Names / Members Column
+                <span class="field-hint">e.g. "members" or "name"</span>
+              </label>
+              <select id="selectNameCol" class="form-select"></select>
+            </div>
+
+            <div class="form-group">
+              <label for="selectEventCol">
+                Event Column
+                <span class="field-hint">Fest event</span>
+              </label>
+              <select id="selectEventCol" class="form-select"></select>
+            </div>
+
+            <div class="form-group">
+              <label for="selectEmailCol">
+                Gmail / Email Column
+                <span class="field-hint">For sending certificate via Gmail</span>
+              </label>
+              <select id="selectEmailCol" class="form-select"></select>
+            </div>
+          </div>
+
+          <!-- Multi-Name Comma / Pipe Separation Box -->
+          <div class="multi-name-box">
+            <label class="multi-name-label">
+              <input type="checkbox" id="checkSplitNames" checked>
+              <span><strong>Split Team Members into Individual Certificates</strong></span>
+            </label>
+            <p class="field-hint">When a row contains 2, 3, or 4 names separated by pipes or commas (e.g. <em>"S Sudhir | Tyuu | Rgghb | Rvhn"</em>), each student receives their own individual certificate, linked to the registered Gmail.</p>
+            <div id="splitStatusNotice" class="split-status-notice">
+              <span>📊 Loaded <strong id="rowCount">0</strong> rows → Generating <strong id="certCount">0</strong> personalized certificates</span>
+            </div>
+          </div>
+
+          <div class="form-group mb-0 mt-3">
+            <label for="selectDefaultEvent">
+              Default Fallback Event (If empty in row)
+            </label>
+            <select id="selectDefaultEvent" class="form-select">
+              <option value="Battle Front">Option 1: Battle Front</option>
+              <option value="Code Craft">Option 2: Code Craft</option>
+              <option value="Mythos AI">Option 3: Mythos AI</option>
+              <option value="Tech Master">Option 4: Tech Master</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-0 mt-3">
+            <label for="selectSignOff">
+              Email Sign-off Authority in Gmail Draft
+            </label>
+            <select id="selectSignOff" class="form-select">
+              <option value="principal" selected>Dr. S. N. Venkatesh (Principal, SFGC)</option>
+              <option value="convenor">Pro. Bhavya KS (Convenor Aarambh 2K26)</option>
+              <option value="both">Both (Convenor & Principal)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Participants List & Navigation Card -->
+        <div id="participantsCard" class="card" style="display:none;">
+          <div class="card-header flex-between">
+            <div class="flex-align">
+              <span class="card-icon">👥</span>
+              <h2>Certificates List (<span id="participantCount">0</span>)</h2>
+              <button type="button" id="btnSendAllFromTable" class="btn btn-sm btn-success" style="margin-left: 0.75rem;" title="Send certificate emails to all participants">✉️ Send All</button>
+            </div>
+            <div class="search-wrap">
+              <input type="text" id="filterInput" class="form-input form-input-sm" placeholder="Search name/event...">
+            </div>
+          </div>
+
+          <!-- Navigation Pill Bar -->
+          <div class="nav-control-bar">
+            <button type="button" id="btnNavPrev" class="btn btn-sm btn-outline">◀ Prev</button>
+            <span id="navCounter" class="nav-counter-text">1 of 1</span>
+            <button type="button" id="btnNavNext" class="btn btn-sm btn-outline">Next ▶</button>
+          </div>
+
+          <!-- Instructions banner for Gmail Attachment -->
+          <div class="dispatch-tip-banner">
+            <span>📎 <strong>How to Attach in Gmail:</strong> When you click <strong>✉️ Send via Gmail</strong>, the certificate image is <strong>automatically downloaded</strong> and <strong>copied to your clipboard</strong>! Simply press <strong>Ctrl+V</strong> inside Gmail or drag the downloaded file into the email window.</span>
+          </div>
+
+          <!-- Scrollable Table -->
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:35px;">#</th>
+                  <th>Student Name</th>
+                  <th>Event</th>
+                  <th>Gmail ID</th>
+                  <th style="width:110px; text-align:center;">Send / Print</th>
+                </tr>
+              </thead>
+              <tbody id="participantTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Print & Batch Actions Card -->
+        <div id="printActionsCard" class="card actions-card" style="display:none;">
+          <div class="card-header">
+            <span class="card-icon">🚀</span>
+            <h2>Batch Actions & Email Dispatch</h2>
+          </div>
+          <div class="actions-grid">
+            <button id="btnSendAllEmails" class="btn btn-success btn-block btn-lg" style="grid-column: 1 / -1;">
+              ✉️ Send All Certificates via Email
+            </button>
+            <button id="btnPrintAll" class="btn btn-primary btn-block">
+              🖨️ Print All Certificates (Multi-Page A4)
+            </button>
+            <button id="btnDownloadZip" class="btn btn-secondary btn-block">
+              📦 Download All as ZIP (High-Res PNGs)
+            </button>
+            <button id="btnPrintCurrent" class="btn btn-outline btn-block">
+              🖨️ Print Current Certificate
+            </button>
+            <button id="btnDownloadSinglePng" class="btn btn-outline btn-block">
+              📥 Download Current PNG
+            </button>
+          </div>
+        </div>
+
+        <!-- Section: Typography & Alignment Settings (Shared) -->
+        <div class="card">
+          <div class="card-header flex-between">
+            <div class="flex-align">
+              <span class="card-icon">✨</span>
+              <h2>Font & Precise Alignment</h2>
+            </div>
+            <button type="button" id="btnResetAlignment" class="link-btn" title="Reset alignment to default">Reset</button>
+          </div>
+
+          <div class="form-group">
+            <label for="selectFont">Font Family</label>
+            <select id="selectFont" class="form-select">
+              <option value="Georgia, serif" selected>Georgia (Classic Roman Serif)</option>
+              <option value="'Cinzel', serif">Cinzel (Stately Roman Antique)</option>
+              <option value="'Playfair Display', serif">Playfair Display (Prestigious Serif)</option>
+              <option value="'Great Vibes', cursive">Great Vibes (Calligraphy Script)</option>
+              <option value="'Times New Roman', serif">Times New Roman (Academic Serif)</option>
+              <option value="'Montserrat', sans-serif">Montserrat (Modern Clean Sans)</option>
+            </select>
+          </div>
+
+          <div class="sliders-grid">
+            <div class="form-group">
+              <div class="slider-header">
+                <label for="sliderNameSize">Name Font Size</label>
+                <span id="valNameSize" class="slider-val">64px</span>
+              </div>
+              <input type="range" id="sliderNameSize" min="40" max="96" value="64" class="form-range">
+            </div>
+
+            <div class="form-group">
+              <div class="slider-header">
+                <label for="sliderNameY">Name Vertical Nudge</label>
+                <span id="valNameY" class="slider-val">0px</span>
+              </div>
+              <input type="range" id="sliderNameY" min="-30" max="30" value="0" class="form-range">
+            </div>
+
+            <div class="form-group">
+              <div class="slider-header">
+                <label for="sliderEventSize">Event Font Size</label>
+                <span id="valEventSize" class="slider-val">46px</span>
+              </div>
+              <input type="range" id="sliderEventSize" min="30" max="68" value="46" class="form-range">
+            </div>
+
+            <div class="form-group">
+              <div class="slider-header">
+                <label for="sliderEventY">Event Vertical Nudge</label>
+                <span id="valEventY" class="slider-val">0px</span>
+              </div>
+              <input type="range" id="sliderEventY" min="-25" max="25" value="0" class="form-range">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Text Color</label>
+            <div class="color-options">
+              <button type="button" class="color-swatch active" data-color="#1c1917" style="background:#1c1917;" title="Deep Ink Charcoal (Official Template Match)"></button>
+              <button type="button" class="color-swatch" data-color="#1e293b" style="background:#1e293b;" title="Navy Slate"></button>
+              <button type="button" class="color-swatch" data-color="#451a03" style="background:#451a03;" title="Vintage Bronze"></button>
+              <button type="button" class="color-swatch" data-color="#000000" style="background:#000000;" title="Pure Black"></button>
+              <input type="color" id="customColorPicker" value="#1c1917" title="Custom color picker">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TAB 2: MANUAL TYPING ==================== -->
+      <div id="tabManual" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">✍️</span>
+            <h2>Manual Entry</h2>
+          </div>
+
+          <div class="form-group">
+            <label for="inputName">
+              Participant Name
+              <span class="field-hint">Appears on the line below "presented to"</span>
+            </label>
+            <div class="input-with-action">
+              <input type="text" id="inputName" class="form-input" placeholder="e.g. Alexander Montgomery" value="Alexander Montgomery" autocomplete="off">
+              <button type="button" id="btnCaseToggle" class="btn-case" title="Toggle Title Case / UPPERCASE">aA</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="selectEvent">
+              Event
+              <span class="field-hint">Select one of the 4 fest events</span>
+            </label>
+            <select id="selectEvent" class="form-select">
+              <option value="Battle Front" selected>Option 1: Battle Front</option>
+              <option value="Code Craft">Option 2: Code Craft</option>
+              <option value="Mythos AI">Option 3: Mythos AI</option>
+              <option value="Tech Master">Option 4: Tech Master</option>
+            </select>
+
+            <!-- Quick Pill Selector -->
+            <div class="event-pills">
+              <button type="button" class="event-pill active" data-event="Battle Front">⚔️ Battle Front</button>
+              <button type="button" class="event-pill" data-event="Code Craft">💻 Code Craft</button>
+              <button type="button" class="event-pill" data-event="Mythos AI">🧠 Mythos AI</button>
+              <button type="button" class="event-pill" data-event="Tech Master">⚡ Tech Master</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="manualEmail">Gmail / Email ID (Optional)</label>
+            <input type="email" id="manualEmail" class="form-input" placeholder="student@gmail.com">
+          </div>
+
+          <div class="manual-dispatch-buttons mt-3">
+            <button type="button" id="btnManualSendGmail" class="btn btn-primary btn-block">✉️ Send via Gmail</button>
+            <button type="button" id="btnManualDownloadEml" class="btn btn-outline btn-block mt-2">📄 Download .EML (With Attachment)</button>
+          </div>
+        </div>
+
+        <div class="card actions-card">
+          <div class="card-header">
+            <span class="card-icon">🚀</span>
+            <h2>Export Current</h2>
+          </div>
+          <div class="actions-grid">
+            <button id="btnManualDownloadPng" class="btn btn-primary btn-block">
+              📥 Download Ultra-HD PNG
+            </button>
+            <button id="btnManualDownloadPdf" class="btn btn-secondary btn-block">
+              📄 Download PDF
+            </button>
+            <button id="btnManualPrint" class="btn btn-outline btn-block">
+              🖨️ Direct Print (A4)
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Area: Interactive Live Certificate Canvas Preview -->
+    <section class="preview-area">
+      <div class="preview-toolbar no-print">
+        <div class="toolbar-title">
+          <span class="live-indicator"></span> 
+          <span id="previewTitle">Live Certificate Preview</span>
+        </div>
+        <div class="toolbar-controls">
+          <span class="dim-badge">3120 × 2206 px</span>
+          <button id="btnZoomOut" class="btn-icon" title="Zoom Out">🔍−</button>
+          <button id="btnZoomReset" class="btn-icon" title="Fit to Screen">Fit</button>
+          <button id="btnZoomIn" class="btn-icon" title="Zoom In">🔍+</button>
+          <button id="btnFullscreen" class="btn-icon" title="Toggle Fullscreen">⛶</button>
+        </div>
+      </div>
+
+      <div class="canvas-viewport" id="viewport">
+        <div class="canvas-wrapper" id="canvasWrapper">
+          <canvas id="certCanvas" width="3120" height="2206"></canvas>
+        </div>
+      </div>
+
+      <div class="preview-footer no-print">
+        <p>💡 <strong>Note:</strong> All college branding, logos, graphics, and official text are strictly preserved from the original certificate. Alignment is calibrated to official template lines.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Multi-page container used exclusively for printing all certificates at once -->
+  <div id="printBatchContainer" class="print-only"></div>
+
+  <!-- Modal: Gmail Attachment Guide & Actions -->
+  <div id="attachmentModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">✉️</span>
+          <div>
+            <h3 class="modal-title">Gmail Compose Ready</h3>
+            <p class="modal-subtitle" id="modalParticipantSub">Participant Name • Event</p>
+          </div>
+        </div>
+        <button type="button" id="btnCloseModal" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="status-box success">
+          <span class="status-check">✅</span>
+          <div>
+            <strong>Certificate Copied to Clipboard & Downloaded!</strong>
+            <p>Gmail opened in your new browser tab with recipient, subject, and body ready.</p>
+          </div>
+        </div>
+
+        <div class="how-to-attach-card">
+          <h4>📎 How to attach the certificate in Gmail:</h4>
+          <div class="step-item">
+            <span class="step-num">1</span>
+            <div class="step-text">
+              <strong>Instant Paste (Recommended):</strong>
+              <p>Go to your opened Gmail tab, click inside the message body, and press <kbd>Ctrl</kbd> + <kbd>V</kbd>. The certificate immediately embeds into the email!</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-num">2</span>
+            <div class="step-text">
+              <strong>Drag & Drop File:</strong>
+              <p>Drag the downloaded file (<span id="modalFileName">Certificate.png</span>) from your browser download bar directly into the Gmail window.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions-grid">
+          <button type="button" id="btnModalCopyClip" class="btn btn-outline">
+            📋 Re-Copy Image
+          </button>
+          <button type="button" id="btnModalDownloadPng" class="btn btn-outline">
+            📥 Re-Download PNG
+          </button>
+          <button type="button" id="btnModalDownloadEml" class="btn btn-secondary">
+            📄 Download .EML (File Pre-Attached)
+          </button>
+        </div>
+
+        <div id="modalServerTip" class="server-tip-box">
+          <div class="server-tip-content">
+            <span class="server-tip-icon">⚡</span>
+            <div>
+              <strong>1-Click Background Auto-Sender (with real attachment)</strong>
+              <p>Run <code>Start_Auto_Sender_Server.bat</code> to enable fully automated background sending without having to paste manually!</p>
+            </div>
+          </div>
+          <button type="button" id="btnModalAutoSend" class="btn btn-primary btn-sm">
+            ⚡ Auto-Send Now
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="btnModalDone" class="btn btn-primary">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Batch Email Dispatch Progress -->
+  <div id="batchEmailModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">✉️</span>
+          <div>
+            <h3 class="modal-title">Sending Certificates via Email</h3>
+            <p class="modal-subtitle" id="batchModalSubtitle">Automated background delivery with certificate attachments</p>
+          </div>
+        </div>
+        <button type="button" id="btnCloseBatchModal" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Progress Bar Container -->
+        <div class="batch-progress-wrapper">
+          <div class="batch-progress-info">
+            <span id="batchProgressLabel">Preparing batch...</span>
+            <span id="batchProgressPercent">0%</span>
+          </div>
+          <div class="batch-progress-track">
+            <div id="batchProgressBar" class="batch-progress-bar" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Live Statistics Counter -->
+        <div class="batch-stats-grid">
+          <div class="stat-card">
+            <div class="stat-val" id="batchTotalCount">0</div>
+            <div class="stat-label">Total</div>
+          </div>
+          <div class="stat-card stat-success">
+            <div class="stat-val" id="batchSuccessCount">0</div>
+            <div class="stat-label">Delivered ✅</div>
+          </div>
+          <div class="stat-card stat-danger">
+            <div class="stat-val" id="batchFailCount">0</div>
+            <div class="stat-label">Failed ❌</div>
+          </div>
+          <div class="stat-card stat-warning">
+            <div class="stat-val" id="batchSkipCount">0</div>
+            <div class="stat-label">Skipped ⚠️</div>
+          </div>
+        </div>
+
+        <!-- Current processing participant card -->
+        <div class="current-sending-card" id="currentSendingCard">
+          <span class="spinner-dot"></span>
+          <div class="current-sending-text">
+            <div class="current-sending-name" id="currentSendingName">Ready</div>
+            <div class="current-sending-sub" id="currentSendingSub">Preparing to start dispatch...</div>
+          </div>
+        </div>
+
+        <!-- Real-Time Activity Log -->
+        <div class="batch-log-wrapper">
+          <div class="batch-log-header">
+            <span>📜 Live Activity Log</span>
+            <button type="button" id="btnClearBatchLog" class="btn-text">Clear</button>
+          </div>
+          <div class="batch-log-list" id="batchLogList">
+            <div class="log-entry text-dim">Batch dispatch not started yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer flex-between">
+        <div class="modal-footer-left">
+          <span id="batchFooterStatus" class="status-indicator-text">Ready</span>
+        </div>
+        <div class="modal-footer-actions">
+          <button type="button" id="btnPauseResumeBatch" class="btn btn-outline" style="display:none;">⏸️ Pause</button>
+          <button type="button" id="btnCancelBatch" class="btn btn-danger" style="display:none;">⏹️ Stop Batch</button>
+          <button type="button" id="btnCloseBatchDone" class="btn btn-primary">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: SMTP Configuration / Google App Password Setup -->
+  <div id="smtpConfigModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">🔑</span>
+          <div>
+            <h3 class="modal-title">Gmail SMTP Setup</h3>
+            <p class="modal-subtitle">Configure Google App Password to enable automated email sending</p>
+          </div>
+        </div>
+        <button type="button" id="btnCloseSmtpModal" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="info-callout">
+          <strong>💡 Why is an App Password needed?</strong>
+          <p>Google requires a 16-character <strong>App Password</strong> to send emails automatically through your Gmail account with attachments without needing manual approval for each email.</p>
+        </div>
+
+        <form id="smtpConfigForm">
+          <div class="form-group">
+            <label for="smtpSenderEmail">Sender Gmail Address</label>
+            <input type="email" id="smtpSenderEmail" class="form-input" placeholder="saajand18@gmail.com" required>
+          </div>
+
+          <div class="form-group">
+            <label for="smtpAppPassword">
+              16-Character Google App Password
+              <span class="field-hint">e.g., abcd efgh ijkl mnop</span>
+            </label>
+            <div class="input-with-action">
+              <input type="password" id="smtpAppPassword" class="form-input" placeholder="16-character app password" autocomplete="off" required>
+              <button type="button" id="btnToggleAppPw" class="btn-case" title="Show/Hide Password">👁️</button>
+            </div>
+          </div>
+
+          <div class="instructions-steps-card">
+            <h4>How to get your App Password in 1 minute:</h4>
+            <ol>
+              <li>Open your <a href="https://myaccount.google.com/security" target="_blank" rel="noopener">Google Account Security</a> settings.</li>
+              <li>Ensure <strong>2-Step Verification</strong> is enabled.</li>
+              <li>Search for <strong>"App passwords"</strong> in the search bar.</li>
+              <li>Create a new password named <strong>"Aarambh Fest"</strong>, copy the 16 characters, and paste it above!</li>
+            </ol>
+          </div>
+
+          <div class="form-actions mt-3">
+            <button type="submit" id="btnSaveSmtpConfig" class="btn btn-primary btn-block">
+              💾 Save & Continue Sending
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Server Offline Helper -->
+  <div id="serverOfflineModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">⚠️</span>
+          <div>
+            <h3 class="modal-title">Auto-Sender Server Offline</h3>
+            <p class="modal-subtitle">Start the local server to dispatch emails automatically</p>
+          </div>
+        </div>
+        <button type="button" id="btnCloseOfflineModal" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="status-box warning">
+          <span>⚡</span>
+          <div>
+            <strong>The local email server is not running.</strong>
+            <p>To deliver emails with attachments in the background, the local Python bridge must be running.</p>
+          </div>
+        </div>
+
+        <div class="how-to-attach-card mt-3">
+          <h4>🚀 How to start the server:</h4>
+          <div class="step-item">
+            <span class="step-num">1</span>
+            <div class="step-text">
+              <strong>Open C:\Certificate folder</strong>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-num">2</span>
+            <div class="step-text">
+              <strong>Double-click <code>Start_Auto_Sender_Server.bat</code></strong>
+              <p>A black terminal window will open saying <em>"Ready to receive email dispatches"</em>. Keep it open!</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-num">3</span>
+            <div class="step-text">
+              <strong>Click "Check Server & Send" below!</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <button type="button" id="btnRetryServerConnection" class="btn btn-primary btn-block btn-lg">
+            🔄 Check Server & Start Sending
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Local Offline Libraries -->
+  <script src="template_data.js"></script>
+  <script src="xlsx.full.min.js"></script>
+  <script src="jszip.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
