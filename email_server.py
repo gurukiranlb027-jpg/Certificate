@@ -144,7 +144,12 @@ class SMTPConnectionPool:
         try:
             server = smtplib.SMTP(host, port, timeout=25)
             server.starttls()
-            server.login(sender, pw)
+            try:
+                server.login(sender, pw)
+            except (smtplib.SMTPAuthenticationError, smtplib.SMTPServerDisconnected) as auth_err:
+                raise ValueError(
+                    f"Gmail rejected your credentials. You entered a normal account password ('{pw[:4]}***'), but Google requires a 16-character 'App Password'. Please visit https://myaccount.google.com/apppasswords to create one."
+                ) from auth_err
             self.server = server
             self.last_used = now
             self.cached_sender = sender
