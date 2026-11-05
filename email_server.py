@@ -23,6 +23,13 @@ try:
 except ImportError:
     HAS_PIL = False
 
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 PORT = 5000
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CERT_DIR = os.path.join(BASE_DIR, "certificates")
@@ -45,7 +52,7 @@ def load_config():
         except Exception as e:
             print("Config read error:", e)
     return {
-        "sender_email": "saajand18@gmail.com",
+        "sender_email": "saajand34@gmail.com",
         "app_password": "",
         "smtp_server": "smtp.gmail.com",
         "smtp_port": 587,
@@ -171,36 +178,43 @@ class SMTPConnectionPool:
 smtp_pool = SMTPConnectionPool()
 
 
-class AutoSenderHandler(http.server.BaseHTTPRequestHandler):
-    def _send_cors_headers(self):
+class AutoSenderHandler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=BASE_DIR, **kwargs)
+
+    def end_headers(self):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Private-Network", "true")
+        super().end_headers()
 
     def do_OPTIONS(self):
         self.send_response(200)
-        self._send_cors_headers()
         self.end_headers()
 
+    def log_message(self, format, *args):
+        if len(args) > 0 and "/api/status" in str(args[0]):
+            return
+        super().log_message(format, *args)
+
     def do_GET(self):
-        if self.path == "/api/status":
+        if self.path.startswith("/api/status"):
             config = load_config()
             has_pw = bool(config.get("app_password", "").strip())
             response_data = {
                 "status": "ready",
                 "server": "AARAMBH 2K26 Auto-Sender",
                 "configured": has_pw,
-                "sender": config.get("sender_email", ""),
+                "sender": config.get("sender_email", "saajand34@gmail.com"),
                 "has_pil": HAS_PIL
             }
             self.send_response(200)
-            self._send_cors_headers()
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps(response_data).encode("utf-8"))
         else:
-            self.send_response(404)
-            self.end_headers()
+            super().do_GET()
 
     def do_POST(self):
         if self.path == "/api/send-email":
@@ -210,7 +224,6 @@ class AutoSenderHandler(http.server.BaseHTTPRequestHandler):
                 data = json.loads(body)
             except Exception as e:
                 self.send_response(400)
-                self._send_cors_headers()
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(json.dumps({"success": False, "message": "Invalid JSON"}).encode("utf-8"))
@@ -296,7 +309,6 @@ class AutoSenderHandler(http.server.BaseHTTPRequestHandler):
                 )
 
             self.send_response(200)
-            self._send_cors_headers()
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps({
@@ -326,7 +338,6 @@ class AutoSenderHandler(http.server.BaseHTTPRequestHandler):
                 smtp_pool.close()
 
                 self.send_response(200)
-                self._send_cors_headers()
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(json.dumps({
@@ -337,7 +348,6 @@ class AutoSenderHandler(http.server.BaseHTTPRequestHandler):
                 }).encode("utf-8"))
             except Exception as e:
                 self.send_response(400)
-                self._send_cors_headers()
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(json.dumps({"success": False, "message": str(e)}).encode("utf-8"))

@@ -802,7 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- Local Auto-Send Server Client & Batch Dispatch Engine ---
-  let serverState = { online: false, configured: false, sender: 'saajand18@gmail.com' };
+  let serverState = { online: false, configured: false, sender: 'saajand34@gmail.com' };
   let isBatchRunning = false;
   let isBatchPaused = false;
   let batchCancelRequested = false;
@@ -815,7 +815,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.status === 'ready') {
         serverState.online = true;
         serverState.configured = !!data.configured;
-        serverState.sender = data.sender || 'saajand18@gmail.com';
+        serverState.sender = data.sender || 'saajand34@gmail.com';
 
         serverStatusBadge.className = 'server-status-pill online';
         serverStatusBadge.innerHTML = '<span class="status-dot"></span> Auto-Sender: Online (1-Click Ready)';
@@ -877,7 +877,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openSmtpSetupModal() {
     if (smtpConfigModal) {
-      if (smtpSenderEmail) smtpSenderEmail.value = serverState.sender || 'saajand18@gmail.com';
+      if (smtpSenderEmail) smtpSenderEmail.value = serverState.sender || 'saajand34@gmail.com';
       smtpConfigModal.style.display = 'flex';
     }
   }

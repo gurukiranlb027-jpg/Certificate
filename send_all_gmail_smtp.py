@@ -34,7 +34,7 @@ def load_config():
         except Exception:
             pass
     return {
-        "sender_email": "saajand18@gmail.com",
+        "sender_email": "saajand34@gmail.com",
         "app_password": "",
         "smtp_server": "smtp.gmail.com",
         "smtp_port": 587,
@@ -178,7 +178,7 @@ def send_email_with_attachment(to_email, name, event, cert_path, config):
 def main():
     print("=" * 65)
     print("  AARAMBH 2K26 - AUTOMATED EMAIL SENDER & CERTIFICATE GENERATOR")
-    print("  Seshadripuram First Grade College • Inter-Collegiate PU Fest")
+    print("  Seshadripuram First Grade College - Inter-Collegiate PU Fest")
     print("=" * 65)
 
     config = load_config()
@@ -191,7 +191,7 @@ def main():
         print(f"\nCurrent Sender Gmail: {sender_email}")
         print(f"App Password Status:  {pw_status}")
         print("\nSelect an action:")
-        print("  [1] Send 1 Test Email with Attachment (to saajand18@gmail.com)")
+        print(f"  [1] Send 1 Test Email with Attachment (to {sender_email})")
         print("  [2] Send Certificates to ALL participants in sample_participants.csv")
         print("  [3] Generate All Certificates as Ultra-HD PNGs (Without sending)")
         print("  [4] Configure Gmail Sender & Google App Password")
