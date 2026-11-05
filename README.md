@@ -55,7 +55,7 @@ If you want to send certificates to all students / teams automatically in one cl
 - ⚔️ **Option 1: Battle Front**
 - 💻 **Option 2: Code Craft**
 - 🧠 **Option 3: Mythos AI**
-- ⚡ **Option 4: Tech Master**
+- ⚡ **Option 4: Mind of Memes**
 
 ---
 
