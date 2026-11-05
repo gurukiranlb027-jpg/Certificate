@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const EVENT_CENTER_X = 1278;
   const EVENT_BASE_Y = 1674;
 
-  const VALID_EVENTS = ['Battle Front', 'Code Craft', 'Mythos AI', 'Tech Master'];
+  const VALID_EVENTS = ['Battle Front', 'Code Craft', 'Mythos AI', 'Minds of Memes'];
 
   // --- Load Template Image ---
   const templateImg = new Image();
@@ -533,8 +533,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return 'Code Craft';
     } else if (clean.includes('mythos') || clean.includes('ai') || clean === '3' || clean.includes('option3')) {
       return 'Mythos AI';
-    } else if (clean.includes('tech') || clean.includes('master') || clean === '4' || clean.includes('option4')) {
-      return 'Tech Master';
+    } else if (clean.includes('Minds') || clean.includes('of') || clean.includes('Memes') || clean === '4' || clean.includes('option4')) {
+      return 'Minds of Memes';
     }
 
     for (let ve of VALID_EVENTS) {
